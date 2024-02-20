@@ -1,6 +1,7 @@
 const express = require("express");
 const homeController = require("../controllers/homeController.js");
 const homeControllerUser = require("../controllers/homeControllerUser.js")
+const homeControllerDoctor = require("../controllers/doctorController.js")
 
 
 const router = express.Router();
@@ -22,6 +23,12 @@ const initWebRouters = (app) => {
     router.put('/api/edit-a-user', homeControllerUser.handleEditUser);
     router.get('/api/search-users', homeControllerUser.handleSearchUsers);
     router.get('/api/get-all-codes', homeControllerUser.handleGetAllCodes);
+
+    router.get('/api/get-all-doctors', homeControllerDoctor.handleGetAllDoctors);
+    router.get('/api/get-top-doctors', homeControllerDoctor.handleGetTopDoctors);
+    router.post('/api/save-infor-doctors', homeControllerDoctor.handlePostInforDoctors);
+    router.get('/api/get-detail-doctor-by-id', homeControllerDoctor.handleGetDetailDoctorById);
+    router.post('/api/bulk-create-schedule', homeControllerDoctor.handleBulkCreateSchedule);
 
 
 

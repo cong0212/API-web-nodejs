@@ -6,7 +6,7 @@ module.exports = {
         // date: DataTypes.DATE,
         // timeType: DataTypes.STRING,
         // doctorID: DataTypes.INTEGER
-        await queryInterface.createTable('schedules', {
+        await queryInterface.createTable('Schedules', {
             id: {
                 allowNull: false,
                 autoIncrement: true,
@@ -39,6 +39,6 @@ module.exports = {
         });
     },
     down: async (queryInterface, Sequelize) => {
-        await queryInterface.dropTable('schedules');
+        await queryInterface.dropTable('Schedules');
     }
 };
