@@ -5,11 +5,11 @@ const doctorService = require('../services/doctorService')
 
 let handleGetTopDoctors = async (req, res) => {
     let limit = req.query.limit;
-    if(!limit) limit = 10;
-    try{
+    if (!limit) limit = 10;
+    try {
         let response = await doctorService.getTopDoctor(+limit);
         return res.status(200).json(response);
-    }catch(e) {
+    } catch (e) {
         console.log(e);
         return res.status(200).json({
             errCode: -1,
@@ -75,7 +75,38 @@ let handleBulkCreateSchedule = async (req, res) => {
     }
 }
 
+let getScheduleByDate = async (req, res) => {
+    try {
+        let response = await doctorService.handleGetScheduleByDate(req.query.doctorId, req.query.date);
+        return res.status(200).json({
+            response
+        })
+    } catch (e) {
+        console.log(e)
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server'
+        })
+    }
+}
+
+let getExtranInforDoctorById = async (req, res) => {
+    try {
+        let response = await doctorService.handleGetInforDoctorById(req.query.doctorId);
+        console.log('check id Doctor:', req.query.doctorId)
+        return res.status(200).json({
+            response
+        })
+    } catch (e) {
+        console.log(e)
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server'
+        })
+    }
+}
+
 module.exports = {
     handleGetAllDoctors, handlePostInforDoctors, handleGetDetailDoctorById,
-    handleBulkCreateSchedule, handleGetTopDoctors
+    handleBulkCreateSchedule, handleGetTopDoctors, getScheduleByDate, getExtranInforDoctorById
 }

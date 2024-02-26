@@ -29,6 +29,8 @@ const initWebRouters = (app) => {
     router.post('/api/save-infor-doctors', homeControllerDoctor.handlePostInforDoctors);
     router.get('/api/get-detail-doctor-by-id', homeControllerDoctor.handleGetDetailDoctorById);
     router.post('/api/bulk-create-schedule', homeControllerDoctor.handleBulkCreateSchedule);
+    router.get('/api/get-schedule-doctor-by-date', homeControllerDoctor.getScheduleByDate);
+    router.get('/api/get-extra-infor-doctor-by-id', homeControllerDoctor.getExtranInforDoctorById);
 
 
 

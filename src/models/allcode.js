@@ -13,6 +13,11 @@ module.exports = (sequelize, DataTypes) => {
             // define association here
             ALLcode.hasMany(models.User, { foreignKey: 'positionID', as:'positionData' })
             ALLcode.hasMany(models.User, { foreignKey: 'gender', as: 'genderData' })
+            ALLcode.hasMany(models.Schedule, { foreignKey: 'timeType', as: 'timeTypeData' })
+
+            ALLcode.hasMany(models.DoctorInfor, { foreignKey: 'priceID', as: 'priceTypeData' })
+            ALLcode.hasMany(models.DoctorInfor, { foreignKey: 'provinceID', as: 'provinceTypeData' })
+            ALLcode.hasMany(models.DoctorInfor, { foreignKey: 'paymentID', as: 'paymentTypeData' })
         }
     };
     ALLcode.init({
