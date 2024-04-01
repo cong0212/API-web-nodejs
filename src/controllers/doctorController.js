@@ -90,6 +90,21 @@ let getScheduleByDate = async (req, res) => {
     }
 }
 
+let getAllDoctorBySpecialty = async (req, res) => {
+    try {
+        let response = await doctorService.handleGetAllDoctorBySpecialty(req.query.doctorId, req.query.date);
+        return res.status(200).json({
+            response
+        })
+    } catch (e) {
+        console.log(e)
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server'
+        })
+    }
+}
+
 let getExtranInforDoctorById = async (req, res) => {
     try {
         let response = await doctorService.handleGetInforDoctorById(req.query.doctorId);
@@ -106,7 +121,55 @@ let getExtranInforDoctorById = async (req, res) => {
     }
 }
 
+let getProfileDoctorById = async (req, res) => {
+    try {
+        let response = await doctorService.handleGetProfileDoctorById(req.query.doctorId);
+        console.log('check id Doctor:', req.query.doctorId)
+        return res.status(200).json({
+            response
+        })
+    } catch (e) {
+        console.log(e)
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server'
+        })
+    }
+}
+
+
+let getListPatientForDoctor = async (req, res) => {
+    try {
+        let response = await doctorService.handleGetListPatientForDoctor(req.query.doctorId, req.query.date);
+        return res.status(200).json({
+            response
+        })
+    } catch (e) {
+        console.log(e)
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server'
+        })
+    }
+}
+
+let sendRemedy = async (req, res) => {
+    try {
+        let response = await doctorService.sendRemedy(req.body);
+        return res.status(200).json({
+            response
+        })
+    } catch (e) {
+        console.log(e)
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server'
+        })
+    }
+}
+
 module.exports = {
     handleGetAllDoctors, handlePostInforDoctors, handleGetDetailDoctorById,
-    handleBulkCreateSchedule, handleGetTopDoctors, getScheduleByDate, getExtranInforDoctorById
+    handleBulkCreateSchedule, handleGetTopDoctors, getScheduleByDate, getExtranInforDoctorById,
+    getProfileDoctorById, getListPatientForDoctor, sendRemedy, getAllDoctorBySpecialty
 }

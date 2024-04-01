@@ -18,6 +18,8 @@ module.exports = (sequelize, DataTypes) => {
             ALLcode.hasMany(models.DoctorInfor, { foreignKey: 'priceID', as: 'priceTypeData' })
             ALLcode.hasMany(models.DoctorInfor, { foreignKey: 'provinceID', as: 'provinceTypeData' })
             ALLcode.hasMany(models.DoctorInfor, { foreignKey: 'paymentID', as: 'paymentTypeData' })
+
+            ALLcode.hasMany(models.Booking, {foreignKey: 'timeType', as: 'timeTypeDataPatient'})
         }
     };
     ALLcode.init({

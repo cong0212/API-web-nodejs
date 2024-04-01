@@ -11,6 +11,16 @@ module.exports = (sequelize, DataTypes) => {
          */
         static associate(models) {
             Schedule.belongsTo(models.ALLcode, { foreignKey: 'timeType', targetKey: 'keyMap', as: 'timeTypeData' })
+
+            Schedule.belongsTo(models.User, { foreignKey: 'doctorID', targetKey: 'id', as: 'doctorData' })
+
+            Schedule.belongsTo(models.DoctorInfor, { foreignKey: 'doctorID' });
+
+            Schedule.hasMany(models.Booking, {
+                foreignKey: 'doctorID', // Khóa ngoại trên bảng Booking
+                sourceKey: 'doctorID', // Khóa chính trên bảng Schedule
+                as: 'bookingData'
+            });
         }
     };
     Schedule.init({

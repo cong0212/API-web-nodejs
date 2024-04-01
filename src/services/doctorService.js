@@ -2,6 +2,9 @@ const db = require('../models/index.js')
 const { Op } = require('sequelize');
 require('dotenv').config();
 const _ = require('lodash');
+const emailService = require('./emailService.js');
+const Sequelize = require('sequelize');
+
 
 
 const MAX_NUMBER_SCHEDULE = process.env.MAX_NUMBER_SCHEDULE
@@ -30,8 +33,9 @@ let getAllDoctor = () => {
 let saveInforDoctor = (data) => {
     return new Promise(async (resolve, reject) => {
         try {
+            console.log('check data doctor infor: ', data)
             if (!data.doctorId || !data.contentHTML || !data.contentMarkdown || !data.action
-                || !data.selectPrice || !data.selectPayment || !data.selectProvince
+                || !data.selectPrice || !data.selectPayment || !data.selectProvince || !data.specialtyID
                 || !data.nameClinic || !data.addressClinic || !data.note
             ) {
                 resolve({
@@ -80,9 +84,11 @@ let saveInforDoctor = (data) => {
                     doctorInfor.priceID = data.selectPrice;
                     doctorInfor.provinceID = data.selectProvince;
                     doctorInfor.paymentID = data.selectPayment;
+                    doctorInfor.specialtyID = data.specialtyID;
                     doctorInfor.addressClinic = data.addressClinic;
                     doctorInfor.nameClinic = data.nameClinic;
-                    doctorInfor.note = data.note
+                    doctorInfor.note = data.note;
+
                     await doctorInfor.save()
                 }
                 else {
@@ -91,6 +97,7 @@ let saveInforDoctor = (data) => {
                         priceID: data.selectPrice,
                         provinceID: data.selectProvince,
                         paymentID: data.selectPayment,
+                        specialtyID: data.specialtyID,
                         nameClinic: data.nameClinic,
                         addressClinic: data.addressClinic,
                         note: data.note,
@@ -264,10 +271,20 @@ let handleGetScheduleByDate = (doctorId, date) => {
                         date: date
                     },
                     include: [
-                        { model: db.ALLcode, as: 'timeTypeData', attributes: ['valueEn', 'valueVi'] }
+                        { model: db.ALLcode, as: 'timeTypeData', attributes: ['valueEn', 'valueVi'] },
+
+                        { model: db.User, as: 'doctorData', attributes: ['firstName', 'lastName'] },
+
+                        {
+                            model: db.Booking,
+                            as: 'bookingData',
+                            attributes: ['id', 'statusID', 'date', 'timeType'],
+
+                        }
                     ],
                     raw: false,
-                    nest: true
+                    nest: true,
+
                 })
 
                 if (!dataSchedule) dataSchedule = [];
@@ -284,6 +301,53 @@ let handleGetScheduleByDate = (doctorId, date) => {
         }
     })
 }
+
+handleGetAllDoctorBySpecialty = (doctorId, date) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!doctorId || !date) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing parameter'
+                })
+            } else {
+                let dataSchedule = await db.Booking.findAll({
+                    where: {
+                        doctorId: doctorId,
+                        date: date
+                    },
+                    include: [
+                        // { model: db.ALLcode, as: 'timeTypeData', attributes: ['valueEn', 'valueVi'] },
+
+                        // { model: db.User, as: 'doctorData', attributes: ['firstName', 'lastName'] },
+
+                        {
+                            model: db.Schedule,
+                            as: 'scheduleData',
+                            attributes: ['id', 'doctorID', 'date', 'timeType'],
+
+                        }
+                    ],
+                    raw: false,
+                    nest: true,
+
+                })
+
+                if (!dataSchedule) dataSchedule = [];
+
+                resolve({
+                    errCode: 0,
+                    data: dataSchedule
+                })
+            }
+
+
+        } catch (e) {
+            reject(e)
+        }
+    })
+};
+
 
 let handleGetInforDoctorById = (doctorId) => {
     return new Promise(async (resolve, reject) => {
@@ -322,8 +386,152 @@ let handleGetInforDoctorById = (doctorId) => {
     })
 }
 
+let handleGetProfileDoctorById = (doctorId) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!doctorId) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing parameter!'
+                })
+            } else {
+                let data = await db.User.findOne({
+                    where: { id: doctorId },
+                    attributes: {
+                        exclude: ['password']
+                    },
+                    include: [
+                        {
+                            model: db.Markdown,
+                            attributes: ['description', 'contentHTML', 'contentMarkdown']
+                        },
+                        { model: db.ALLcode, as: 'positionData', attributes: ['valueEN', 'valueVI'] },
+
+                        {
+                            model: db.DoctorInfor,
+                            attributes: {
+                                exclude: ['id', 'doctorID']
+                            },
+                            include: [
+                                { model: db.ALLcode, as: 'priceTypeData', attributes: ['valueEN', 'valueVI'] },
+                                { model: db.ALLcode, as: 'provinceTypeData', attributes: ['valueEN', 'valueVI'] },
+                                { model: db.ALLcode, as: 'paymentTypeData', attributes: ['valueEN', 'valueVI'] }
+                            ]
+
+                        }
+                    ],
+                    raw: false,
+                    nest: true,
+                })
+
+                if (data && data.image) {
+                    data.image = new Buffer.from(data.image, 'base64').toString('binary');
+                }
+
+                if (!data) data = {};
+
+                resolve({
+                    errCode: 0,
+                    data: data
+                })
+            }
+
+        } catch (e) {
+            reject(e);
+        }
+    })
+}
+
+let handleGetListPatientForDoctor = (doctorId, date) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!doctorId || !date) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing parameter !'
+                })
+            } else {
+                let data = await db.Booking.findAll({
+                    where: {
+                        statusID: 'S2',
+                        doctorID: doctorId,
+                        date: date
+                    },
+                    include: [
+                        {
+                            model: db.User, as: 'patientData',
+                            attributes: ['email', 'firstName', 'address', 'gender'],
+                            include: [
+                                {
+                                    model: db.ALLcode, as: 'genderData', attributes: ['valueEN', 'valueVI']
+                                }
+                            ]
+                        },
+                        {
+                            model: db.ALLcode, as: 'timeTypeDataPatient', attributes: ['valueEN', 'valueVI']
+                        }
+                    ],
+                    raw: false,
+                    nest: true
+                })
+
+                resolve({
+                    errCode: 0,
+                    data: data
+                })
+            }
+
+        } catch (e) {
+            reject(e)
+        }
+    })
+}
+
+let sendRemedy = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.email || !data.doctorId || !data.patientID || !data.timeType) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing parameter !'
+                })
+            } else {
+                let appointment = await db.Booking.findOne({
+                    where: {
+                        statusID: 'S2',
+                        doctorID: data.doctorId,
+                        patientID: data.patientID,
+                        timeType: data.timeType
+                    },
+                    raw: false,
+                })
+
+                if (appointment) {
+                    appointment.statusID = 'S3'
+                    await appointment.save()
+                }
+
+                await emailService.sendAttachment(data);
+
+
+
+
+                resolve({
+                    errCode: 0,
+                    data: data
+                })
+            }
+
+        } catch (e) {
+            reject(e)
+        }
+    })
+}
+
+
 
 module.exports = {
     getAllDoctor, saveInforDoctor, handleGetDetailDoctorById, handleBulkCreateSchedule,
-    getTopDoctor, handleGetScheduleByDate, handleGetInforDoctorById
+    getTopDoctor, handleGetScheduleByDate, handleGetInforDoctorById, handleGetProfileDoctorById,
+    handleGetListPatientForDoctor, sendRemedy, handleGetAllDoctorBySpecialty
 }
